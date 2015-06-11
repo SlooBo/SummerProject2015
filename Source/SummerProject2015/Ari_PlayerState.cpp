@@ -15,7 +15,8 @@ void AAri_PlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 
 	DOREPLIFETIME(AAri_PlayerState, team);
 	DOREPLIFETIME(AAri_PlayerState, huntTarget);
-	DOREPLIFETIME(AAri_PlayerState, kills);
+	DOREPLIFETIME(AAri_PlayerState, frags);
+	DOREPLIFETIME(AAri_PlayerState, deaths);
 };
 
 uint8 AAri_PlayerState::GetTeam()
@@ -23,7 +24,12 @@ uint8 AAri_PlayerState::GetTeam()
 	return team;
 }
 
-int32 AAri_PlayerState::GetKills()
+int32 AAri_PlayerState::GetFrags()
 {
-	return kills;
+	return frags;
+}
+
+int32 AAri_PlayerState::GetDeaths()
+{
+	return deaths;
 }

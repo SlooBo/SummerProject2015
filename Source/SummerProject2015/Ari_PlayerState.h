@@ -21,8 +21,11 @@ public:
 	UFUNCTION(BlueprintCallable, Meta = (DisplayName = "Get Team Number"), Category = "Gameplay")
 	uint8 GetTeam();
 
-	UFUNCTION(BlueprintCallable, Meta = (DisplayName = "Get Kills"), Category = "Gameplay")
-	int32 GetKills();
+	UFUNCTION(BlueprintCallable, Meta = (DisplayName = "Get Frags"), Category = "Gameplay")
+	int32 GetFrags();
+
+	UFUNCTION(BlueprintCallable, Meta = (DisplayName = "Get Deaths"), Category = "Gameplay")
+	int32 GetDeaths();
 
 //private:
 
@@ -34,7 +37,11 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, Meta = (DisplayName = "Hunt Target"))
 	uint32 huntTarget;
 
-	// Player score
-	UPROPERTY(Replicated, Meta = (DisplayName = "Kills"))
-	int32 kills;
+	// Player Frags
+	UPROPERTY(Replicated, Meta = (DisplayName = "Player Frags"))
+	int32 frags;
+
+	// Player Deaths
+	UPROPERTY(Replicated, Meta = (DisplayName = "Player Deaths"))
+	int32 deaths;
 };

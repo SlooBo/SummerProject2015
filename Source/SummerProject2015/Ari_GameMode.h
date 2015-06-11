@@ -49,12 +49,13 @@ public:
 	virtual void OnStartMatch();
 
 	// Event when map time has reached zero
-	UFUNCTION(BlueprintImplementableEvent, Meta = (FriendlyName = "On Map Timeout"), Category = "Gameplay")
+	UFUNCTION(BlueprintImplementableEvent, Meta = (FriendlyName = "On Map Timeout"), Category = "Gameplay,Level")
 	virtual void OnMapTimeout();
 
 	// Event when player dies or is killed by other player
-	UFUNCTION(BlueprintNativeEvent, Meta = (FriendlyName = "On Player Death"), Category = "Gameplay")
+	UFUNCTION(BlueprintNativeEvent, Meta = (FriendlyName = "On Player Death"), Category = "Gameplay|Player")
 	void OnPlayerDeath(APlayerController* player, APlayerController* killer = NULL);
+	virtual void OnPlayerDeath_Implementation(APlayerController* player, APlayerController* killer = NULL);
 
 	// Properties
 	// ----------------

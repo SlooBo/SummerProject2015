@@ -88,4 +88,46 @@ void AAri_HuntGameMode::SetRandomHuntTarget(APlayerController* player)
 	}
 }
 
+void AAri_HuntGameMode::OnPlayerDeath_Implementation(APlayerController* player, APlayerController* killer)
+{
+	AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(player->PlayerState);
+	AAri_PlayerState* killerState = (killer != NULL) ? static_cast<AAri_PlayerState*>(killer->PlayerState) : NULL;
+	uint32 playerUniqueID = playerState->GetUniqueID();
 
+	if (killerState != NULL)
+	{
+		if (killerState->huntTarget == playerUniqueID)
+		{
+			// correct target died
+			killerState->frags += 1;
+			killerState->Score += 1;
+		}
+		else
+			killerState->Score -= 2;
+	}
+
+	playerState->deaths--;
+
+	if (killer != NULL)
+	{
+		if (killerState->huntTarget == playerUniqueID)
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, player->GetName() + TEXT(" killed ") + killer->GetName());
+		else
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, player->GetName() + TEXT(" killed ") + killer->GetName());
+	}
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, player->GetName() + TEXT(" died"));
+
+	// assign new hunt target for target and target's hunters
+	for (auto p : players)
+	{
+		AAri_PlayerState* pState = static_cast<AAri_PlayerState*>(p->PlayerState);
+		if (pState->huntTarget == playerUniqueID || pState->GetUniqueID() == playerUniqueID)
+			SetRandomHuntTarget(p);
+	}
+
+	// reset character state to defaults
+	player->GetPawn()->Reset();
+
+	RestartPlayer(player);
+}

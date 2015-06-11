@@ -158,14 +158,16 @@ void AAri_GameMode::PlayerDeath(APlayerController* player, APlayerController* ki
 
 void AAri_GameMode::OnPlayerDeath_Implementation(APlayerController* player, APlayerController* killer)
 {
-	if (killer != NULL)
-	{
-		AAri_PlayerState* killerState = static_cast<AAri_PlayerState*>(killer->PlayerState);
-		killerState->kills += 1;
-	}
-	
 	AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(player->PlayerState);
-	playerState->kills -= 1;
+	AAri_PlayerState* killerState = (killer != NULL) ? static_cast<AAri_PlayerState*>(killer->PlayerState) : NULL;
+
+	if (killerState != NULL)
+	{
+		killerState->frags += 1;
+		killerState->Score += 1;
+	}
+
+	playerState->deaths--;
 
 	if (killer != NULL)
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, player->GetName() + TEXT(" killed ") + killer->GetName());
@@ -173,7 +175,7 @@ void AAri_GameMode::OnPlayerDeath_Implementation(APlayerController* player, APla
 		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, player->GetName() + TEXT(" died"));
 
 	// reset character state to defaults
-	player->GetControlledPawn()->Reset();
+	player->GetPawn()->Reset();
 
 	RestartPlayer(player);
 }

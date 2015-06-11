@@ -19,6 +19,13 @@ public:
 	virtual void StartMatch() override;
 	virtual void PostLogin(APlayerController* newPlayer) override;
 
+	// Event when player dies or is killed by other player
+	//UFUNCTION(BlueprintNativeEvent, Meta = (FriendlyName = "On Player Death"), Category = "Gameplay|Player")
+	//void OnPlayerDeath(APlayerController* player, APlayerController* killer = NULL);
+	virtual void OnPlayerDeath_Implementation(APlayerController* player, APlayerController* killer = NULL);
+
 	UFUNCTION(BlueprintCallable, Meta = (FriendlyName = "Set Random Hunt Target"), Category = "Gameplay")
 	void SetRandomHuntTarget(APlayerController* player);
+
+	
 };
