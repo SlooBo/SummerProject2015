@@ -9,7 +9,23 @@ AOfficerat::AOfficerat()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+	FObjectInitializer initializer;
+	CameraSpringComponent = initializer.CreateDefaultSubobject<USpringArmComponent>(this, TEXT("CameraSpring"));
+	//Maybe bUsePawnControlRotation = true
+	CameraSpringComponent->bUseControllerViewRotation = true;
+	CameraSpringComponent->AttachParent = GetRootComponent();
+
+	CameraComp = initializer.CreateDefaultSubobject<UCameraComponent>(this, TEXT("Camera"));
+	CameraComp->AttachParent = CameraSpringComponent;
+
+	Health_Max = 100;
+	Health_Current = Health_Max;
+
+	Stamina_Max = 100;
+	Stamina_Current = Stamina_Max;
+
+	WallTouch = false;
+	Dash_Multiplier = 0;
 }
 
 // Called when the game starts or when spawned
@@ -24,6 +40,8 @@ void AOfficerat::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 	WallCheck();
+	FKey E("E");
+	AOfficerat::EditorKeyPressed(E, EInputEvent::IE_Pressed);
 }
 
 // Called to bind functionality to input

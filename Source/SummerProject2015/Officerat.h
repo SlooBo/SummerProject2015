@@ -23,20 +23,26 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UFUNCTION()
+	UFUNCTION(FUNC_BlueprintCallable)
 	bool RemoveStamina(float Fatigue);
-	UFUNCTION()
+	UFUNCTION(FUNC_BlueprintCallable)
 	void AddStamina(float Stamina);
-	UFUNCTION()
+	UFUNCTION(FUNC_BlueprintCallable)
 	void AddHealth(float Health);
-	UFUNCTION()
+	UFUNCTION(BlueprintPure)
 	void RemoveHealth(float Damage);
-	UFUNCTION()
+	UFUNCTION(FUNC_BlueprintPure)
 	void WallJump();
-	UFUNCTION()
+	UFUNCTION(FUNC_BlueprintCallable)
 	void Dash(float InputForward, float InputRight);
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+		USpringArmComponent* CameraSpringComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+		UCameraComponent* CameraComp;
+
 	void WallCheck();
 
 	bool WallTouch;
