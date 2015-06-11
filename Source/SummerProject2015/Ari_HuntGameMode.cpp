@@ -12,17 +12,20 @@ AAri_HuntGameMode::AAri_HuntGameMode(const FObjectInitializer& objectInitializer
 
 }
 
-void AAri_HuntGameMode::StartPlay()
+void AAri_HuntGameMode::StartMatch()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Hunt mode"));
+	Super::StartMatch();
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Hunt mode ") + FString::FromInt(players.Num()));
 
-	Super::StartPlay();
+	for (auto player : players)
+		SetRandomHuntTarget(player);
 }
 
 void AAri_HuntGameMode::PostLogin(APlayerController* newPlayer)
 {
 	// team testing stuff
 	
+	// count team members
 	int team1 = 0, team2 = 0;
 	for (APlayerController* player : players)
 	{
@@ -35,6 +38,7 @@ void AAri_HuntGameMode::PostLogin(APlayerController* newPlayer)
 			team2++;
 	}
 
+	// assign new team for the player
 	AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(newPlayer->PlayerState);
 	if (playerState != NULL)
 	{
@@ -44,10 +48,44 @@ void AAri_HuntGameMode::PostLogin(APlayerController* newPlayer)
 		else
 			playerState->team = 2;
 
-		//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Team: ") + FString::FromInt(playerState->team));
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Team: ") + FString::FromInt(playerState->team));
 	}
-
+	
 	Super::PostLogin(newPlayer);
+
+	// hunt target
+	for (auto player : players)
+	{
+		AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(player->PlayerState);
+		if (playerState == NULL)
+			continue;
+
+		if (playerState->huntTarget == MAX_uint32)
+			SetRandomHuntTarget(player);
+	}
+}
+
+void AAri_HuntGameMode::SetRandomHuntTarget(APlayerController* player)
+{
+	if (players.Num() > 2)
+	{
+		APlayerController* target = NULL;
+		uint32 targetId = 0;
+
+		do
+		{
+			int j = FMath::RandRange(0, players.Num() - 1);
+			target = players[j];
+		} while (player == target);
+		
+		AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(player->PlayerState);
+		AAri_PlayerState* targetState = static_cast<AAri_PlayerState*>(target->PlayerState);
+
+		if (targetState != NULL && playerState != NULL)
+			playerState->huntTarget = targetState->GetUniqueID();
+
+		GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, player->GetName() + TEXT(" Hunts ") + target->GetName());
+	}
 }
 
 

@@ -16,7 +16,9 @@ class SUMMERPROJECT2015_API AAri_HuntGameMode : public AAri_GameMode
 public:
 	AAri_HuntGameMode(const class FObjectInitializer& objectInitializer);
 
-	virtual void StartPlay() override;
-	
+	virtual void StartMatch() override;
 	virtual void PostLogin(APlayerController* newPlayer) override;
+
+	UFUNCTION(BlueprintCallable, Meta = (FriendlyName = "Set Random Hunt Target"), Category = "Gameplay")
+	void SetRandomHuntTarget(APlayerController* player);
 };

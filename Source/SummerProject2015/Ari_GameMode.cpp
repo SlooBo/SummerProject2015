@@ -21,8 +21,6 @@ AAri_GameMode::AAri_GameMode(const FObjectInitializer& objectInitializer)
 
 	GameStateClass = AAri_GameState::StaticClass();
 	PlayerStateClass = AAri_PlayerState::StaticClass();
-
-	// TODO: Hud, player controller?
 }
 
 AActor* AAri_GameMode::ChoosePlayerStart(AController* player)
@@ -32,13 +30,13 @@ AActor* AAri_GameMode::ChoosePlayerStart(AController* player)
 	int numSpawns = 0;
 	int spawn = 0;
 	int team = 0;
-
+	
+	// get player's current team
 	AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(player->PlayerState);
 	if (playerState != NULL)
 		team = playerState->GetTeam();
-	else
-		DebugBreak();
 
+	// find team spawns
 	for (TActorIterator<AAri_PlayerStart> iter(GetWorld()); iter; ++iter)
 	{
 		int spawnTeam = (*iter)->GetTeam();
@@ -62,19 +60,27 @@ AActor* AAri_GameMode::ChoosePlayerStart(AController* player)
 		best = spawns[random];
 
 	if (best == NULL)
-		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Error: No spawn "));
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, TEXT("Error: No spawn"));
 
 	return (AActor*)best;
-}
-
-void AAri_GameMode::StartMatch()
-{
-	Super::StartMatch();
 }
 
 void AAri_GameMode::StartPlay()
 {
 	Super::StartPlay();
+}
+
+void AAri_GameMode::StartMatch()
+{
+	Super::StartMatch();
+
+	if (mapTimelimit > 0)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mapTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(mapTimerHandle, this, &AAri_GameMode::MapTimeout, 1.0f*mapTimelimit/**60.0f*/);
+	}
+
+	OnStartMatch();
 }
 
 APlayerController* AAri_GameMode::Login(class UPlayer* newPlayer, const FString& portal, const FString& options,
@@ -89,6 +95,8 @@ void AAri_GameMode::PostLogin(APlayerController* newPlayer)
 	players.Add(newPlayer);
 
 	Super::PostLogin(newPlayer);
+
+	RestartPlayer(newPlayer);
 }
 
 void AAri_GameMode::Logout(AController* exiting)
@@ -110,8 +118,62 @@ bool AAri_GameMode::ShouldSpawnAtStartSpot(AController* player)
 	return false;
 }
 
+bool AAri_GameMode::ShouldReset(AActor* actorToReset)
+{
+	return true;
+}
+
 FString AAri_GameMode::InitNewPlayer(APlayerController* newPlayerController, const TSharedPtr<FUniqueNetId>& uniqueId,
 	const FString& options, const FString& portal)
 {
 	return Super::InitNewPlayer(newPlayerController, uniqueId, options, portal);
+}
+
+UClass* AAri_GameMode::GetDefaultPawnClassForController(AController* controller)
+{
+	return DefaultPawnClass;
+}
+
+void AAri_GameMode::MapTimeout()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, TEXT("Map timelimit reached"));
+
+	OnMapTimeout();
+}
+
+float AAri_GameMode::MapTimeleft()
+{
+	return GetWorld()->GetTimerManager().GetTimerRemaining(mapTimerHandle);
+}
+
+float AAri_GameMode::MapTimeElapsed()
+{
+	return GetWorld()->GetTimerManager().GetTimerElapsed(mapTimerHandle);
+}
+
+void AAri_GameMode::PlayerDeath(APlayerController* player, APlayerController* killer)
+{
+	OnPlayerDeath(player, killer);
+}
+
+void AAri_GameMode::OnPlayerDeath_Implementation(APlayerController* player, APlayerController* killer)
+{
+	if (killer != NULL)
+	{
+		AAri_PlayerState* killerState = static_cast<AAri_PlayerState*>(killer->PlayerState);
+		killerState->kills += 1;
+	}
+	
+	AAri_PlayerState* playerState = static_cast<AAri_PlayerState*>(player->PlayerState);
+	playerState->kills -= 1;
+
+	if (killer != NULL)
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, player->GetName() + TEXT(" killed ") + killer->GetName());
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, player->GetName() + TEXT(" died"));
+
+	// reset character state to defaults
+	player->GetControlledPawn()->Reset();
+
+	RestartPlayer(player);
 }
